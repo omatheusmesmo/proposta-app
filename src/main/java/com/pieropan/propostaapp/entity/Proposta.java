@@ -30,4 +30,5 @@ public class Proposta {
     @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name="id_usuario")
     private Usuario usuario;
+
 }

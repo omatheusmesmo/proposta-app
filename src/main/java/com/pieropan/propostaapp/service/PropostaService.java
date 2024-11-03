@@ -5,7 +5,6 @@ import com.pieropan.propostaapp.dto.PropostaResponseDto;
 import com.pieropan.propostaapp.entity.Proposta;
 import com.pieropan.propostaapp.mapper.PropostaMapper;
 import com.pieropan.propostaapp.repository.PropostaRepository;
-import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -31,10 +30,18 @@ public class PropostaService {
         Proposta proposta = PropostaMapper.INSTANCE.convertDtoToProposta(requestDto);
         propostaRepository.save(proposta);
 
-        PropostaResponseDto response = PropostaMapper.INSTANCE.convertEntitytoDto(proposta);
-        notificacaoService.notificar(response, exchange);
+        notificarRabbitMQ(proposta);
 
-        return response;
+        return PropostaMapper.INSTANCE.convertEntitytoDto(proposta);
+    }
+
+    private void notificarRabbitMQ(Proposta proposta){
+       try {
+           notificacaoService.notificar(proposta, exchange);
+       }catch (RuntimeException e){
+           proposta.setIntegrada(false);
+           propostaRepository.save(proposta);
+       }
     }
 
     public List<PropostaResponseDto> obterProposta() {
