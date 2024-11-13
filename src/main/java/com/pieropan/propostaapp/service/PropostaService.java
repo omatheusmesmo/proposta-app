@@ -18,12 +18,12 @@ public class PropostaService {
 
     private PropostaRepository propostaRepository;
 
-    private NotificacaoService notificacaoService;
+    private NotificacaoRabbitService notificacaoRabbitService;
 
-    public PropostaService(@Value("${rabbitmq.propostapendente.exchange}") String exchange, PropostaRepository propostaRepository, NotificacaoService notificacaoService) {
+    public PropostaService(@Value("${rabbitmq.propostapendente.exchange}") String exchange, PropostaRepository propostaRepository, NotificacaoRabbitService notificacaoRabbitService) {
         this.exchange = exchange;
         this.propostaRepository = propostaRepository;
-        this.notificacaoService = notificacaoService;
+        this.notificacaoRabbitService = notificacaoRabbitService;
     }
 
     public PropostaResponseDto criar (PropostaRequestDto requestDto){
@@ -37,7 +37,7 @@ public class PropostaService {
 
     private void notificarRabbitMQ(Proposta proposta){
        try {
-           notificacaoService.notificar(proposta, exchange);
+           notificacaoRabbitService.notificar(proposta, exchange);
        }catch (RuntimeException e){
            proposta.setIntegrada(false);
            propostaRepository.save(proposta);
